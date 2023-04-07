@@ -2,10 +2,32 @@ package com.bignerdranch.android.geoquiz
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.Gravity.TOP
+import android.view.View
+import android.widget.Button
+import android.widget.Toast
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var trueButton: Button
+    private lateinit var falseButton: Button
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        trueButton = findViewById(R.id.true_button)
+        falseButton = findViewById(R.id.false_button)
+
+        trueButton.setOnClickListener { view: View ->
+        var myToast1 = Toast.makeText(this, R.string.correct_toast, Toast.LENGTH_SHORT)
+        myToast1.setGravity(TOP, 0, 0)
+            myToast1.show()
+
+        }
+        falseButton.setOnClickListener {view: View ->
+            var myToast2 = Toast.makeText(this, R.string.incorrect_toast, Toast.LENGTH_SHORT)
+            myToast2.setGravity(TOP, -200,200)
+            myToast2.show()
+
+        }
     }
 }
