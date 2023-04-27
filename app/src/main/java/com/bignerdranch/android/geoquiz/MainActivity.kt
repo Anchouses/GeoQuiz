@@ -1,33 +1,138 @@
 package com.bignerdranch.android.geoquiz
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.Gravity.TOP
+import android.util.Log
 import android.view.View
 import android.widget.Button
+import android.widget.ImageButton
+import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.get
 
-class MainActivity : AppCompatActivity() {
+
+private const val TAG = "MainActivity"
+
+class MainActivity : AppCompatActivity() {   //подкласс Activity
     private lateinit var trueButton: Button
     private lateinit var falseButton: Button
-    override fun onCreate(savedInstanceState: Bundle?) {
+    private lateinit var nextButton: ImageButton
+    private lateinit var previousButton: ImageButton
+    private lateinit var questionTextView: TextView
+
+    private var countCorrectAns = 0
+    private val quizViewModel: QuizViewModel by lazy {
+        ViewModelProvider(this)[QuizViewModel::class.java]
+    }
+
+    //@SuppressLint("MissingInflatedId")
+    override fun onCreate(savedInstanceState: Bundle?) { //метод жизненного цикла
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        Log.d(TAG, "onCreate(Bundle?) called")
+        setContentView(R.layout.activity_main)  //заполнение виджетов и их вывод на экран
 
-        trueButton = findViewById(R.id.true_button)
+        val provider: ViewModelProvider = ViewModelProvider(this)
+        val quizViewModel = provider[QuizViewModel::class.java]
+        Log.d(TAG, "Got a QuizViewModel: $quizViewModel")
+
+
+        trueButton = findViewById(R.id.true_button)  //
         falseButton = findViewById(R.id.false_button)
+        nextButton = findViewById(R.id.next_button)
+        previousButton = findViewById(R.id.previous_button)
+        questionTextView = findViewById(R.id.question_text_view)
 
-        trueButton.setOnClickListener { view: View ->
-        var myToast1 = Toast.makeText(this, R.string.correct_toast, Toast.LENGTH_SHORT)
-        myToast1.setGravity(TOP, 0, 0)
-            myToast1.show()
+        trueButton.setOnClickListener {
 
+            falseButton.isEnabled = false
+            trueButton.isEnabled = false
+            checkAnswer(true)
         }
-        falseButton.setOnClickListener {view: View ->
-            var myToast2 = Toast.makeText(this, R.string.incorrect_toast, Toast.LENGTH_SHORT)
-            myToast2.setGravity(TOP, -200,200)
-            myToast2.show()
 
+        falseButton.setOnClickListener {
+
+            falseButton.isEnabled = false
+            trueButton.isEnabled = false
+            checkAnswer(false)
+        }
+
+        nextButton.setOnClickListener {
+            if (quizViewModel.currentIndex == quizViewModel.questionBank.lastIndex) {
+                nextButton.isEnabled = false
+                previousButton.isEnabled = true
+                val finalMassage = getString(
+                    R.string.final_toast,
+                    countCorrectAns,
+                    quizViewModel.questionBank.size
+                )
+                Toast.makeText(this, finalMassage, Toast.LENGTH_LONG).run {
+                    show()
+                }
+            } else {
+                quizViewModel.moveToNext()
+                updateQuestion()
+            }
+        }
+
+        previousButton.setOnClickListener {
+            if (quizViewModel.currentIndex == 0) {
+                previousButton.isEnabled = false
+            } else {
+                quizViewModel.currentIndex -= 1
+                updateQuestion()
+            }
+        }
+
+        updateQuestion()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Log.d(TAG, "onStart() called")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d(TAG, "onResume() called")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.d(TAG, "onPause() called")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d(TAG, "onStop() called")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d(TAG, "onDestroy() called")
+    }
+
+    private fun updateQuestion() {
+        val questionTextResId = quizViewModel.questionBank[quizViewModel.currentIndex].textResId
+        questionTextView.setText(questionTextResId)
+        trueButton.isEnabled = true
+        falseButton.isEnabled = true
+    }
+
+    private fun checkAnswer(userAnswer: Boolean) {
+        val correctAnswer = quizViewModel.questionBank[quizViewModel.currentIndex].answer
+
+        val messageResId: Int
+        if (userAnswer == correctAnswer) {
+            messageResId = R.string.correct_toast
+            countCorrectAns++
+        } else {
+            messageResId = R.string.incorrect_toast
+        }
+
+        Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).run {
+            show()
         }
     }
+
 }
