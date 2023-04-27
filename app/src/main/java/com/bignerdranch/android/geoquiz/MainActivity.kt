@@ -8,6 +8,10 @@ import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.get
+
+
 private const val TAG = "MainActivity"
 
 class MainActivity : AppCompatActivity() {   //подкласс Activity
@@ -17,19 +21,11 @@ class MainActivity : AppCompatActivity() {   //подкласс Activity
     private lateinit var previousButton: ImageButton
     private lateinit var questionTextView: TextView
 
-    private val questionBank = listOf(
-        Question(R.string.question_australia, true),
-        Question(R.string.question_oceans, true),
-        Question(R.string.question_mideast, false),
-        Question(R.string.question_africa, false),
-        Question(R.string.question_americas, true),
-        Question(R.string.question_asia, true))
+    private var countCorrectAns = 0
+    private val quizViewModel: QuizViewModel by lazy {
+      ViewModelProvider(this)[QuizViewModel::class.java]
+    }
 
-    private var currentIndex = 0
-    private var previousIndex = 0
-    private var countClick = 0
-
-    //private fun <T>List<T>.rand() = shuffled().first()
         //@SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) { //метод жизненного цикла
         super.onCreate(savedInstanceState)
@@ -39,41 +35,47 @@ class MainActivity : AppCompatActivity() {   //подкласс Activity
         trueButton = findViewById(R.id.true_button)  //
         falseButton = findViewById(R.id.false_button)
         nextButton = findViewById(R.id.next_button)
-        previousButton = findViewById(R.id.previous_button)
+       previousButton = findViewById(R.id.previous_button)
+
+
         questionTextView = findViewById(R.id.question_text_view)
 
         trueButton.setOnClickListener {
-            countClick++
-            trueButton.isEnabled = countClick < 1
+
+            falseButton.isEnabled = false
+            trueButton.isEnabled = false
             checkAnswer(true) }
 
         falseButton.setOnClickListener {
-            countClick++
-            falseButton.isEnabled = countClick < 1
-            checkAnswer(false)
 
+            falseButton.isEnabled = false
+            trueButton.isEnabled = false
+            checkAnswer(false)
         }
 
         nextButton.setOnClickListener {
-            trueButton.isEnabled = true
-            falseButton.isEnabled = true
-            countClick = 0
-            previousIndex = currentIndex
-            currentIndex = (currentIndex + 1) % questionBank.size
-            updateQuestion()
-
+            if (quizViewModel.currentIndex == quizViewModel.questionBank.lastIndex) {
+                nextButton.isEnabled = false
+                previousButton.isEnabled = true
+                val finalMassage = getString(R.string.final_toast, countCorrectAns, quizViewModel.questionBank.size)
+                Toast.makeText(this, finalMassage, Toast.LENGTH_LONG).run {
+                    show() }
+            } else {
+                quizViewModel.moveToNext()
+                updateQuestion()
+            }
         }
 
         previousButton.setOnClickListener {
-            currentIndex = previousIndex
-            updateQuestion()
+            if (quizViewModel.currentIndex == 0) {
+                previousButton.isEnabled = false
+            } else {
+                quizViewModel.currentIndex -= 1
+                updateQuestion()
+            }
         }
 
-        questionTextView.setOnClickListener{
-            currentIndex = (currentIndex + 1) % questionBank.size
-           updateQuestion()
-        }
-       updateQuestion()
+        updateQuestion()
     }
 
     override fun onStart() {
@@ -101,21 +103,23 @@ class MainActivity : AppCompatActivity() {   //подкласс Activity
         Log.d(TAG, "onDestroy() called")
     }
     private fun updateQuestion(){
-        val questionTextResId = questionBank[currentIndex].textResId
+        val questionTextResId = quizViewModel.currentQuestionText
         questionTextView.setText(questionTextResId)
+        trueButton.isEnabled = true
+        falseButton.isEnabled = true
     }
 
     private fun checkAnswer(userAnswer: Boolean){
-        val correctAnswer = questionBank[currentIndex].answer
+        val correctAnswer = quizViewModel.currentQuestionAnswer
 
-        val messageResId = if (userAnswer == correctAnswer){
-            R.string.correct_toast } else { R.string.incorrect_toast }
+        val messageResId: Int
+        if (userAnswer == correctAnswer){
+            messageResId = R.string.correct_toast
+            countCorrectAns++
+            } else { messageResId = R.string.incorrect_toast }
 
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).run {
             show() }
     }
 
-    private fun countClicker(){}
-
-    private fun countAnswers(){}
 }
