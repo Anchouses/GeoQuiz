@@ -171,9 +171,9 @@ class MainActivity : AppCompatActivity() {   //подкласс Activity
                 data?.getBooleanExtra(EXTRA_ANSWER_SHOWN, false)?: false
         }
     }
-    fun cheatsCount(){
+    private fun cheatsCount(){
         quizViewModel.countCheats --
-        if (quizViewModel.countCheats == 0) cheatButton.isEnabled = true
+        if (quizViewModel.countCheats == 0) cheatButton.isEnabled = false
         cheatMessage.text = "You can use cheats:" + quizViewModel.countCheats
     }
 
