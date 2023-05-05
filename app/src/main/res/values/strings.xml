@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">GeoQuiz</string>
+    <string name="android_version">API Level %d</string>
+    <string name="count_cheats">You can use cheats: %d</string>
     <string name="question_australia">Canberra is the capital of Australia</string>
     <string name="true_button">True</string>
     <string name="false_button">False</string>

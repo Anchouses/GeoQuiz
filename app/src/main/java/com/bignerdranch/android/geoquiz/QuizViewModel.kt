@@ -4,10 +4,10 @@ import android.content.ContentValues.TAG
 import android.util.Log
 import androidx.lifecycle.ViewModel
 
-
-
 class QuizViewModel: ViewModel() {
     var currentIndex = 0
+    var isCheater = false
+    var countCheats = 3
 
     val questionBank = listOf(
         Question(R.string.question_australia, true),
@@ -29,7 +29,12 @@ class QuizViewModel: ViewModel() {
         currentIndex += 1
     }
 
-
+    fun setCurrentIndex(index: Int): Int{
+        if (index != currentIndex) {
+            currentIndex = index
+        }
+        return currentIndex
+    }
 
     init {
         Log.d(TAG, "ViewModel instance created")
